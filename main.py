@@ -2,13 +2,19 @@ from openai import OpenAI
 
 client = OpenAI()
 
-
-def getResponse(model, message):
+def set_user_input_category(user_input):
+    question_keywords = ["who", "what", "when", "where", "why", "how", "?"]
+    for keyword in question_keywords:
+        if keyword in user_input.lower():
+            return "question"
+    return "statement"
+     
+def getResponse(model, messages):
     response = client.chat.completions.create(
     model = model,
     messages = messages
 )
-    response_content = api_response.choices[0].message.content
+    response_content = response.choices[0].message.content
 
     return response_content
 
@@ -26,4 +32,6 @@ messages = [
 
 # Extract the message content and prints it back out
 response = getResponse(model, messages)
+if set_user_input_category(user_input) == "question":
+    response = "Good question! " + response
 print(response)
