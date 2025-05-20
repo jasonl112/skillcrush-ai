@@ -2,6 +2,17 @@ from openai import OpenAI
 
 client = OpenAI()
 
+
+def getResponse(model, message):
+    response = client.chat.completions.create(
+    model = model,
+    messages = messages
+)
+    response_content = api_response.choices[0].message.content
+
+    return response_content
+
+
 # Accept input from user 
 user_input = input("\nAsk something...\n\n")
 # Take that input as use it to make a request
@@ -12,9 +23,7 @@ messages = [
     {"role": "user", "content": user_input}
 ]
 
-response = client.chat.completions.create(
-    model = model,
-    messages = messages
-)
+
 # Extract the message content and prints it back out
+response = getResponse(model, messages)
 print(response)
