@@ -1,4 +1,26 @@
 import time
+import random
+
+def process_run(thread_id, assistant_id):
+    new_run = client.beta.threads.runs.create(
+        thread_id = thread_id,
+        assistant_id = assistant_id
+    )
+    phrases = ["Thinking", "Pondering", "Dotting the i's", "Achieving world peace"]
+
+    while True:
+        time.sleep(1)
+        print(random.choice(phrases) + "...")
+
+        #monitor the run status
+        run_check = client.beta.threads.runs.retrieve(
+            thread_id = thread_id,
+            run_id = new_run.id
+        )
+        if run_check.status in ["cancelled", "failed", "completed", "expired"]:
+            return run_check
+        
+
 
 #create the assistant
 assistant = client.beta.assistants.create(
@@ -10,39 +32,26 @@ assistant = client.beta.assistants.create(
 #create a thread
 thread = client.beta.threads.create()
  
-#prompt the user to input a message
-user_input = input("You: ")
- 
-#use the prompt to create a message within the thread
-message = client.beta.threads.messages.create(
-    thread_id = thread.id,
-    role = "user",
-    content = user_input
-)
- 
-#create a run
-run = client.beta.threads.runs.create(
-    thread_id = thread.id,
-    assistant_id = assistant.id
-)
- 
-
-
 while True:
-    time.sleep(1)
-    #monitor the run status
-    run = client.beta.threads.runs.retrieve(
+    user_input = input("You: ")
+ 
+    if user_input.lower() == "exit":
+        exit()
+ 
+    message = client.beta.threads.messages.create(
         thread_id = thread.id,
-        run_id = run.id
+        role = "user",
+        content = user_input
     )
  
-    #extract the most recent message content when the run is completed
+    run = process_run(thread.id, assistant.id)
+
     if run.status == "completed":
         thread_messages = client.beta.threads.messages.list(
             thread_id = thread.id
         )
-        message_for_user = thread_messages.data[0].content[0].text.value
+ 
+        print("\nAssistant: " + thread_messages.data[0].content[0].text.value + "\n")
+    if run.status in ["cancelled", "failed", "expired"]:
+        print("\nAssistant: An error has occurred, please try again.\n")
 
-    
-    #display the message to the user
-    print("Assistant: " + message_for_user)
