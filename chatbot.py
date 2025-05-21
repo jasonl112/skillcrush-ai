@@ -1,5 +1,5 @@
 from openai import OpenAI
-
+import tiktoken
 client = OpenAI()
 
 # accepts a preferred model and a list of messages
@@ -19,6 +19,9 @@ def get_api_chat_response_message(model, messages):
     return response_content
 
 model = "gpt-3.5-turbo"
+encoding = tiktoken.encoding_for_model(model)
+token_input_limit = 3
+print(encoding)
 
 chat_history = []
 
@@ -38,6 +41,10 @@ while True:
     if user_input.lower() == "exit":
         exit()
 	
+    token_count = len(encoding.encode(user_input))
+    if (token_count > token_input_limit):
+        print("Your prompt is too long. Please try again.")
+        continue
     chat_history.append({
         "role": "user",
         "content": user_input
